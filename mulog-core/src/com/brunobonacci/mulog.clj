@@ -46,6 +46,7 @@ For more information, please visit: https://github.com/BrunoBonacci/mulog
 ;; create var alias in local namespace
 (defalias log* core/log*)
 
+(declare global-context)
 
 
 (defmacro log
@@ -79,9 +80,11 @@ For more information, please visit: https://github.com/BrunoBonacci/mulog
   Logging an event is extremely cheap (less 300 nanos), so you can log
   plenty without impacting the application performances.
   "
-  [event-name & pairs]
-  `(core/log* core/*default-logger* ~event-name (list :mulog/namespace (str *ns*) ~@pairs)))
-
+  [event-name level & pairs]
+   `(if (and (= :debug ~level)
+               (= :prod (get (global-context) :env :dev)))
+      nil
+      (core/log* core/*default-logger* ~event-name (list :mulog/namespace (str *ns*) ~@pairs))))
 
 
 (defn start-publisher!
